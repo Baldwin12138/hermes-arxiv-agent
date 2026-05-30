@@ -1,10 +1,24 @@
 {
-  "count": 331,
+  "count": 332,
   "crawled_date_min": "2026-04-15",
-  "crawled_date_max": "2026-05-29",
+  "crawled_date_max": "2026-05-30",
   "published_date_min": "2026-01-16",
   "published_date_max": "2026-05-28",
   "papers": [
+    {
+      "arxiv_id": "2605.30014",
+      "title": "From GPS Points to Travel Patterns: Flexible and Semantic Trajectory Generation with LLMs",
+      "authors": "Silin Zhou, Chenhao Wang, Yuntao Wen, Shuo Shang, Lisi Chen, Panos Kalnis",
+      "affiliations": "University of Electronic Science and Technology of China, Chengdu, China; King Abdullah University of Science and Technology, Thuwal, Saudi Arabia",
+      "published_date": "2026-05-28",
+      "categories": "cs.AI",
+      "abstract": "Urban trajectories play a crucial role in modeling urban dynamics and supporting various smart city applications. However, privacy concerns restrict access to large-scale and high-quality trajectory datasets. Trajectory generation provides a promising alternative by synthesizing realistic data to mitigate privacy risks. However, existing methods fail to explicitly capture travel patterns and can only generate fixed-length trajectories under a single condition. To address these limitations, we propose \\textbf{HTP}, which \\textbf{H}ierarchically generates \\textbf{T}ravel patterns first and then generates GPS \\textbf{P}oints by using large language models (LLMs), rather than directly generating GPS points. We first design a trajectory-specific residual quantization variational autoencoder (RQ-VAE) that quantizes micro-level GPS trajectories into compact, macro-level travel pattern tokens in a coarse-to-fine manner. These tokens capture rich segment spatial irregularities, such as point density variations caused by traffic conditions. Then, we extend the LLM vocabulary with travel pattern tokens to align trajectory representations with the LLM input, and apply supervised fine-tuning (SFT) to align the LLM with the trajectory generation task, enabling generation of travel pattern sequences under various conditions. Extensive experiments on two real-world datasets show that HTP outperforms the strongest baseline by an average of 29.78\\% in terms of generation quality. Our code is available at https://github.com/slzhou-xy/HTP.",
+      "summary_cn": "该文提出HTP框架，将轨迹生成分为两步：先用残差量化变分自编码器(RQ-VAE)将GPS轨迹压缩为出行模式token，再用LLM在这些token上生成可变长度出行模式序列，最后解码为轨迹点。该方法支持多条件控制，自然产生变长轨迹，在真实数据集上平均优于最佳基线29.78%。",
+      "pdf_filename": "2605.30014.pdf",
+      "crawled_date": "2026-05-30",
+      "notes": "",
+      "pdf_url": "https://arxiv.org/pdf/2605.30014"
+    },
     {
       "arxiv_id": "2605.29756",
       "title": "LFQ: Logit-aware Final-block Quantization for Boosting the Generation Quality of Low-Bit Quantized LLMs",
