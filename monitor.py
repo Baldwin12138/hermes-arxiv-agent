@@ -10,10 +10,10 @@ import sys
 import json
 import time
 import xml.etree.ElementTree as ET
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from pathlib import Path
 
-import requests
+import urllib3
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 
@@ -29,8 +29,9 @@ OUTPUT_JSON = BASE_DIR / "new_papers.json"   # 输出给 hermes agent 的中间�
 
 # arxiv API 配置
 ARXIV_API = "https://export.arxiv.org/api/query"
-MAX_RESULTS = 50
-REQUEST_INTERVAL = 3  # 秒
+MAX_RESULTS = 30          # 每次抓取篇数
+DAYS_BACK = 3             # 只抓最近N天的论文
+REQUEST_INTERVAL = 3      # 秒
 
 # ==================== 工具函数 ====================
 
@@ -111,11 +112,13 @@ def search_arxiv_papers(keywords: str, max_results: int = MAX_RESULTS) -> list[d
     )
 
     print(f"[INFO] Searching arxiv: {keywords}")
-    response = requests.get(url, timeout=30)
-    response.raise_for_status()
+    http = urllib3.PoolManager()
+    response = http.request("GET", url, timeout=90)
+    if response.status != 200:
+        raise Exception(f"HTTP {response.status}: {response.data.decode('utf-8', errors='replace')}")
 
     ns = {"a": "http://www.w3.org/2005/Atom"}
-    root = ET.fromstring(response.content)
+    root = ET.fromstring(response.data)
 
     papers = []
     for entry in root.findall("a:entry", ns):
@@ -149,6 +152,15 @@ def search_arxiv_papers(keywords: str, max_results: int = MAX_RESULTS) -> list[d
             print(f"[WARN] Parse error: {e}")
             continue
 
+    # 日期过滤：只保留最近 DAYS_BACK 天以内的论文
+    if DAYS_BACK > 0:
+        cutoff = date.today() - timedelta(days=DAYS_BACK)
+        before = len(papers)
+        papers = [p for p in papers if p["published_date"] >= cutoff.isoformat()]
+        filtered = before - len(papers)
+        if filtered:
+            print(f"[INFO] 日期过滤: 移除了 {filtered} 篇超过 {DAYS_BACK} 天的旧论文")
+
     return papers
 
 
@@ -158,11 +170,14 @@ def download_pdf(paper: dict) -> bool:
         print(f"[INFO] PDF exists: {paper['pdf_filename']}")
         return True
     try:
-        response = requests.get(paper["pdf_url"], timeout=60, stream=True)
-        response.raise_for_status()
+        http = urllib3.PoolManager()
+        response = http.request("GET", paper["pdf_url"], timeout=120, preload_content=False)
+        if response.status != 200:
+            raise Exception(f"HTTP {response.status}")
         with open(pdf_path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
+            for chunk in response.stream(8192):
                 f.write(chunk)
+        response.release_conn()
         print(f"[INFO] Downloaded: {paper['pdf_filename']}")
         return True
     except Exception as e:
